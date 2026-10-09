@@ -170,6 +170,11 @@ class JornadaController extends Controller
         return $this->hacer(fn () => $this->jornada->fuera($request->user(), $datos['inicio'], $datos['fin']));
     }
 
+    public function crearIncidencia(): View
+    {
+        return view('jornada.incidencia');
+    }
+
     public function incidencia(Request $request): RedirectResponse
     {
         $this->normalizarHora($request, 'inicio');

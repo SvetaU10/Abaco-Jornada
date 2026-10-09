@@ -41,6 +41,7 @@ Route::middleware(['auth', 'activo'])->group(function () {
         Route::post('/jornada/cerrar', [JornadaController::class, 'cerrar'])->name('jornada.cerrar');
         Route::post('/jornada/seguir', [JornadaController::class, 'seguir'])->name('jornada.seguir');
         Route::post('/jornada/fuera', [JornadaController::class, 'fuera'])->name('jornada.fuera');
+        Route::get('/jornada/incidencia', [JornadaController::class, 'crearIncidencia'])->name('jornada.incidencia.crear');
         Route::post('/jornada/incidencia', [JornadaController::class, 'incidencia'])->name('jornada.incidencia');
         Route::post('/jornada/festivo', [JornadaController::class, 'festivo'])->name('jornada.festivo');
         Route::post('/jornada/completar', [JornadaController::class, 'completar'])->name('jornada.completar');
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'activo'])->group(function () {
         Route::post('/registro/explicacion', [RegistroController::class, 'explicar'])->name('registro.explicar');
         Route::get('/registro/{jornada}', [RegistroController::class, 'show'])->name('registro.show');
         Route::post('/tramos/{tramo}/corregir', [RegistroController::class, 'corregir'])->name('tramos.corregir');
+
+        Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario');
 
         Route::middleware('responsable')->group(function () {
             Route::get('/equipo', [EquipoController::class, 'index'])->name('equipo.index');
@@ -64,7 +67,6 @@ Route::middleware(['auth', 'activo'])->group(function () {
             Route::post('/equipo/{user}/registro', [RegistroController::class, 'motivo'])->name('equipo.motivo');
             Route::get('/equipo/{user}/copia.csv', [RegistroController::class, 'csvDe'])->name('equipo.csv');
 
-            Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario');
             Route::post('/calendario', [CalendarioController::class, 'store'])->name('calendario.store');
             Route::post('/calendario/fallo', [CalendarioController::class, 'fallo'])->name('calendario.fallo');
         });

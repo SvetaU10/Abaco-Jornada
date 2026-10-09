@@ -14,7 +14,7 @@ class CalendarioController extends Controller
 {
     public function __construct(private JornadaService $jornada) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $anio = now()->year;
 
@@ -23,7 +23,7 @@ class CalendarioController extends Controller
             'anio' => $anio,
             'sinCalendario' => $this->jornada->anioSinCalendario(now()),
             'fallos' => FalloComun::query()->orderByDesc('falla_date')->limit(12)->get(),
-            'esResponsable' => true,
+            'esResponsable' => $request->user()->esResponsable(),
         ]);
     }
 

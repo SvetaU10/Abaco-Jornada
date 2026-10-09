@@ -100,6 +100,29 @@ class JornadaTest extends TestCase
             ->assertRedirect(route('jornada'));
     }
 
+    public function test_la_trabajadora_ve_los_festivos_y_no_los_cambia(): void
+    {
+        $this->seed();
+        $ana = User::query()->where('email', 'ana.lopez@abaco.test')->first();
+
+        $this->actingAs($ana)
+            ->get(route('calendario'))
+            ->assertOk()
+            ->assertSee('Calendario', false)
+            ->assertSee('San Isidro', false)
+            ->assertDontSee('Guardar festivo', false)
+            ->assertDontSee('Marcar fallo común', false);
+
+        $this->actingAs($ana)
+            ->post(route('calendario.store'), [
+                'holiday_date' => '2026-10-20',
+                'name' => 'Inventado',
+            ])
+            ->assertRedirect(route('jornada'));
+
+        $this->assertDatabaseMissing('festivos', ['name' => 'Inventado']);
+    }
+
     public function test_la_baja_conserva_la_jornada(): void
     {
         $marta = $this->persona('Marta Ruiz', 'marta.ruiz@abaco.test', 'Madrid', 'responsable');

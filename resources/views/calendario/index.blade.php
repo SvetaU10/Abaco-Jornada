@@ -19,6 +19,12 @@
         @endforelse
     </ul>
 
+    @unless ($esResponsable)
+        <p class="secundario">Puedes consultar los festivos. Los carga tu responsable.</p>
+    @endunless
+
+    @if ($esResponsable)
+
     <form method="post" action="{{ route('calendario.store') }}" class="formulario">
         @csrf
         <label for="holiday_date">Día</label>
@@ -47,5 +53,6 @@
                 </li>
             @endforeach
         </ul>
+    @endif
     @endif
 @endsection

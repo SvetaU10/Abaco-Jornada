@@ -254,6 +254,16 @@ h2 {
 .accion-principal form + form,
 .accion-principal .boton-desplegable { margin-top: 8px; }
 
+.incidencia-aparte {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 640px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--linea, #D5E4E4);
+}
+
 .accion-principal .boton { width: 100%; min-height: 44px; }
 
 .boton-desplegable > summary {
@@ -266,6 +276,28 @@ h2 {
 
 .boton-desplegable[open] .formulario {
     margin-top: 12px;
+}
+
+.incidencia-aparte a.enlace-incidencia {
+    display: inline-flex;
+    width: auto;
+    min-height: 36px;
+    margin-top: 0;
+    padding: 6px 12px;
+}
+
+.aviso-conexion { margin-top: 8px; }
+
+.pantalla-formulario {
+    max-width: 640px;
+}
+
+.pantalla-formulario h1 { margin-bottom: 8px; }
+
+.pantalla-texto {
+    margin-top: 8px;
+    font-size: 16px;
+    line-height: 1.5;
 }
 
 .franja, .guardado, .sin-conexion {

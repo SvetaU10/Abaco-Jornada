@@ -103,6 +103,10 @@
                     @endif
                     @include('jornada.fuera')
                 </div>
+                <div class="incidencia-aparte">
+                    <a class="boton boton-secundario enlace-incidencia" href="{{ route('jornada.incidencia.crear') }}">Comunicar incidencia</a>
+                    <p class="secundario aviso-conexion" data-conexion-vuelta hidden>Ya hay conexión. Entra y declara las horas que no se guardaron.</p>
+                </div>
             @endif
 
             <div class="rejilla">
@@ -121,25 +125,6 @@
                 @endif
 
             </div>
-
-            <form method="post" action="{{ route('jornada.incidencia') }}" class="formulario formulario-aparte" data-incidencia>
-                @csrf
-                <p class="secundario">Si no se guardó un fichaje porque no había conexión, declara aquí las horas. No es un fichaje en directo ni un olvido.</p>
-                <p class="secundario" data-conexion-vuelta hidden>Ya hay conexión. Comunica la incidencia y declara las horas.</p>
-                <label for="incidencia-motivo">Motivo</label>
-                <textarea id="incidencia-motivo" name="motivo" maxlength="500" required></textarea>
-                <div class="horas-par">
-                    <div>
-                        <label for="incidencia-inicio">Inicio</label>
-                        <x-hora id="incidencia-inicio" name="inicio" :max="now()->format('H:i')" />
-                    </div>
-                    <div>
-                        <label for="incidencia-fin">Fin</label>
-                        <x-hora id="incidencia-fin" name="fin" :max="now()->format('H:i')" />
-                    </div>
-                </div>
-                <button class="boton boton-secundario" type="submit">Comunicar incidencia</button>
-            </form>
 
             @if ($puedeBorrarPrueba ?? false)
                 <form method="post" action="{{ route('jornada.borrar-prueba') }}">
