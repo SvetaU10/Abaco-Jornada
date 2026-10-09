@@ -27,6 +27,6 @@ Jornada es una aplicación web. La persona entra con su cuenta y el servidor con
 
 ## Pendiente
 
-Lo que falta para confiar en registros reales está en [plan.md](plan.md). La cola de fichaje sin conexión ya no existe. Sigue pendiente impedir que las horas se solapen o queden imposibles, y dejar la demostración fuera de un entorno con datos reales.
+Lo que falta para confiar en registros reales está en [plan.md](plan.md). La cola de fichaje sin conexión ya no existe. Una corrección y una reunión ya no pueden pisar otro rato, dos correcciones seguidas no dejan una hora imposible, y el borrado de prueba solo existe en la demo.
 
 Pablo, el 9 de octubre de 2026, dejó por confirmar quién valida y actualiza el calendario. La aplicación usa ya el calendario del municipio de Madrid para todas las personas. Esa confirmación sigue abierta en [reuniones.md](reuniones.md).

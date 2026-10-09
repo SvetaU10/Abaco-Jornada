@@ -6,6 +6,13 @@
     <p>
         <a class="boton boton-secundario" href="{{ $consulta ? route('equipo.csv', $persona) : route('registro.csv') }}">Descargar copia</a>
     </p>
+    <form method="get" class="filtro-registro">
+        <label for="desde">Desde</label>
+        <input id="desde" name="desde" type="date" value="{{ $desde }}">
+        <label for="hasta">Hasta</label>
+        <input id="hasta" name="hasta" type="date" value="{{ $hasta }}">
+        <button class="boton boton-secundario" type="submit">Ver</button>
+    </form>
 
     @if ($jornadas->isEmpty())
         <p>Todavía no hay jornadas.</p>
@@ -15,7 +22,7 @@
                 <li>
                     <a href="{{ route('registro.show', $jornada) }}">
                         <span>{{ \App\Support\Tiempo::fecha($jornada->work_date) }}</span>
-                        <strong>{{ \App\Support\Tiempo::texto($servicio->minutosDeJornada($jornada)) }}</strong>
+                        <strong>{{ \App\Support\Tiempo::texto($servicio->minutosRegistrados($persona, $jornada)) }}</strong>
                     </a>
                     <span class="secundario">
                         @if ($jornada->tramoAbierto())
@@ -29,6 +36,17 @@
                 </li>
             @endforeach
         </ul>
+        @if ($jornadas->hasPages())
+            <p class="paginas">
+                @if ($jornadas->previousPageUrl())
+                    <a href="{{ $jornadas->previousPageUrl() }}">Días más recientes</a>
+                @endif
+                <span>Página {{ $jornadas->currentPage() }} de {{ $jornadas->lastPage() }}</span>
+                @if ($jornadas->nextPageUrl())
+                    <a href="{{ $jornadas->nextPageUrl() }}">Días anteriores</a>
+                @endif
+            </p>
+        @endif
     @endif
 
     @if ($propio)

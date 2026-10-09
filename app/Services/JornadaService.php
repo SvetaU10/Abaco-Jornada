@@ -234,7 +234,7 @@ class JornadaService
             if (! $abierto) {
                 throw new ReglaJornada('No hay una jornada abierta.');
             }
-            $abierto->update(['ended_at' => $ahora]);
+            $this->declararSalida($abierto, $user, $ahora, $ahora);
             $this->responder($user, 'cierre', $ahora);
         });
 
@@ -258,6 +258,10 @@ class JornadaService
                 $this->bloquear($user);
                 $this->asegurarPuedeAbrir($user, $ahora);
                 $jornada = $this->jornadaParaAbrir($user, $ahora);
+                $jornada->load('tramos');
+                if ($this->solapa($jornada, $inicio, $ahora)) {
+                    throw new ReglaJornada('Esa hora se cruza con un tramo que ya está guardado.');
+                }
                 $this->abrirTramo($jornada, Tramo::TRABAJO, $inicio, $ahora, false, 'reunion');
                 $this->responder($user, 'inicio', $ahora);
             });
@@ -285,7 +289,7 @@ class JornadaService
             if ($fin->lessThanOrEqualTo($abierto->started_at)) {
                 throw new ReglaJornada('La salida tiene que ser después de las '.Tiempo::hora($abierto->started_at).'.');
             }
-            $abierto->update(['ended_at' => $fin]);
+            $this->declararSalida($abierto, $user, $fin, $ahora);
             $this->responder($user, 'cierre', $ahora);
         });
 
@@ -380,11 +384,12 @@ class JornadaService
         return 'Guardado. Incidencia recibida a las '.Tiempo::hora($ahora).'. No es un fichaje en directo.';
     }
 
-    public function excluirAvisosDeHorario(User $user): void
+    public function excluirAvisosDeHorario(User $user, string $desde): void
     {
         Aviso::query()
             ->where('user_id', $user->id)
             ->where('cuenta', true)
+            ->whereDate('work_date', '>=', $desde)
             ->update([
                 'cuenta' => false,
                 'exclusion' => 'horario',
@@ -434,7 +439,7 @@ class JornadaService
             if ($fin->lessThanOrEqualTo($abierto->started_at)) {
                 throw new ReglaJornada('La salida tiene que ser después de las '.Tiempo::hora($abierto->started_at).'.');
             }
-            $abierto->update(['ended_at' => $fin]);
+            $this->declararSalida($abierto, $user, $fin, $ahora);
             $pasada->update(['closed_late' => true]);
             $this->responder($user, 'olvido', $pasada->work_date);
             $texto = 'Guardado. Salida el '.Tiempo::fecha($pasada->work_date).' a las '.Tiempo::hora($fin).'.';
@@ -463,36 +468,51 @@ class JornadaService
             throw new ReglaJornada('Para cambiar este día, habla con tu responsable.');
         }
 
-        $anterior = $tramo->{$campo};
-        if (! $anterior) {
-            throw new ReglaJornada('Para cerrar la jornada usa Salida.');
-        }
-
-        $nueva = $this->momento($jornada->work_date, $hora);
-        if ($nueva->greaterThan(now())) {
-            throw new ReglaJornada('Esa hora todavía no ha llegado.');
-        }
-        if ($nueva->equalTo($anterior)) {
-            throw new ReglaJornada('Esa hora ya es la que está guardada.');
-        }
-
-        $inicio = $campo === 'started_at' ? $nueva : $tramo->started_at;
-        $fin = $campo === 'ended_at' ? $nueva : $tramo->ended_at;
-        if ($fin && $nueva && $fin->lessThanOrEqualTo($inicio)) {
-            throw new ReglaJornada('La salida tiene que ser después de la entrada.');
-        }
-
         $nota = $nota !== null ? trim($nota) : null;
         if ($nota === '') {
             $nota = null;
         }
 
-        DB::transaction(function () use ($actor, $tramo, $campo, $anterior, $nueva, $motivo, $nota) {
-            $this->anotar($actor, $tramo, $campo, $anterior, $nueva, $motivo, $nota);
-            $tramo->update([$campo => $nueva]);
+        $guardada = null;
+
+        DB::transaction(function () use ($actor, $tramo, $jornada, $duena, $campo, $hora, $motivo, $nota, &$guardada) {
+            $this->bloquear($duena);
+            $fresco = Tramo::query()->whereKey($tramo->id)->lockForUpdate()->first();
+            if (! $fresco) {
+                throw new ReglaJornada('Ese tramo ya no está.');
+            }
+
+            $anterior = $fresco->{$campo};
+            if (! $anterior) {
+                throw new ReglaJornada('Para cerrar la jornada usa Salida.');
+            }
+
+            $nueva = $this->momento($jornada->work_date, $hora);
+            if ($nueva->greaterThan(now())) {
+                throw new ReglaJornada('Esa hora todavía no ha llegado.');
+            }
+            if ($nueva->equalTo($anterior)) {
+                throw new ReglaJornada('Esa hora ya es la que está guardada.');
+            }
+
+            $inicio = $campo === 'started_at' ? $nueva : $fresco->started_at;
+            $fin = $campo === 'ended_at' ? $nueva : $fresco->ended_at;
+            if (! $fin || $fin->lessThanOrEqualTo($inicio)) {
+                throw new ReglaJornada('La salida tiene que ser después de la entrada.');
+            }
+
+            $jornada->unsetRelation('tramos');
+            $jornada->load('tramos');
+            if ($this->solapa($jornada, $inicio, $fin, $fresco->id)) {
+                throw new ReglaJornada('Esa hora se cruza con un tramo que ya está guardado.');
+            }
+
+            $this->anotar($actor, $fresco, $campo, $anterior, $nueva, $motivo, $nota);
+            $fresco->update([$campo => $nueva]);
+            $guardada = $nueva;
         });
 
-        return 'Guardado. La hora ha quedado en las '.Tiempo::hora($nueva).'.';
+        return 'Guardado. La hora ha quedado en las '.Tiempo::hora($guardada).'.';
     }
 
     public function minutosDeJornada(Jornada $jornada, ?Carbon $hasta = null): int
@@ -806,9 +826,12 @@ class JornadaService
         return $ahora;
     }
 
-    private function solapa(Jornada $jornada, Carbon $inicio, Carbon $fin): bool
+    private function solapa(Jornada $jornada, Carbon $inicio, Carbon $fin, ?int $excepto = null): bool
     {
         foreach ($jornada->tramos as $tramo) {
+            if ($excepto !== null && $tramo->id === $excepto) {
+                continue;
+            }
             $tramoFin = $tramo->ended_at ?? now();
             if ($inicio->lt($tramoFin) && $fin->gt($tramo->started_at)) {
                 return true;
@@ -1050,6 +1073,18 @@ class JornadaService
             ->whereDate('work_date', $fecha->toDateString())
             ->whereNull('responded_at')
             ->update(['responded_at' => now()]);
+    }
+
+    private function declararSalida(Tramo $tramo, User $user, Carbon $fin, Carbon $declarada): void
+    {
+        $datos = ['ended_at' => $fin];
+
+        if ($tramo->cerrado_at === null) {
+            $datos['cerrado_por'] = $user->id;
+            $datos['cerrado_at'] = $declarada;
+        }
+
+        $tramo->update($datos);
     }
 
     private function anotar(User $actor, Tramo $tramo, string $campo, Carbon $anterior, Carbon $nueva, string $motivo, ?string $nota): void

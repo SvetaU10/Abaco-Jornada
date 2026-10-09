@@ -62,6 +62,10 @@ class JornadaController extends Controller
 
     private function puedeBorrarPrueba(string $email): bool
     {
+        if (! app()->environment('local', 'testing')) {
+            return false;
+        }
+
         return in_array($email, [
             'ana.lopez@abaco.test',
             'marta.ruiz@abaco.test',

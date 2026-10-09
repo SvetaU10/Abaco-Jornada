@@ -49,7 +49,7 @@ class RegistroCsv
                 $pausas = $jornada->tramos->where('tipo', Tramo::PAUSA);
                 $primero = $trabajo->first();
                 $ultimo = $jornada->tramos->filter(fn (Tramo $tramo) => $tramo->ended_at)->sortBy('ended_at')->last();
-                $porEncima = $this->jornada->porEncima($persona, $jornada);
+                $porEncima = $this->jornada->porEncimaRegistrado($persona, $jornada);
                 $correcciones = $jornada->tramos->flatMap->correcciones->sortBy('created_at');
                 $inicioAnterior = $correcciones->first(fn ($correccion) => $correccion->field === 'started_at');
                 $finAnterior = $correcciones->first(fn ($correccion) => $correccion->field === 'ended_at');
@@ -70,7 +70,7 @@ class RegistroCsv
 
                         return Tiempo::hora($tramo->started_at).'–'.$hasta;
                     })->implode(' | '),
-                    Tiempo::texto($this->jornada->minutosDeJornada($jornada)),
+                    Tiempo::texto($this->jornada->minutosRegistrados($persona, $jornada)),
                     $porEncima ? Tiempo::texto($porEncima) : '',
                 ], ';');
             }

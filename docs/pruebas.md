@@ -28,17 +28,18 @@ La revisión de Pablo del 9 de octubre de 2026 vio 18 pruebas y 92 aserciones. D
 
 ## Defectos abiertos
 
-La revisión del 9 de octubre de 2026 los reprodujo. Todavía no tienen prueba que los impida.
+La revisión del 9 de octubre de 2026 los reprodujo.
 
 | Defecto | Qué ocurre | Estado |
 | --- | --- | --- |
 | Cola sin conexión | El formulario se guardaba en el navegador y se reenviaba al volver | Cerrado. Ya no hay cola. La declaración queda en `test_la_incidencia_de_conexion_declara_horas_sin_fichar_en_directo` |
-| Tramos solapados | Una corrección no impide cruzar dos tramos. Una reunión puede repetir tiempo ya anotado | Abierto |
-| Cifra distinta en el panel y en el registro | Con la jornada abierta pasada la hora de salida, Hoy puede cortar el tiempo y el registro o el CSV seguir sumando | Abierto |
-| Dos correcciones seguidas | No se relee el tramo al guardar. El inicio puede quedar después del fin | Abierto |
-| Borrado de demostración | Ana y Marta pueden borrar el fichaje de hoy sin mirar el entorno | Abierto. Hay una prueba que lo permite a propósito |
-| Cambio de horario | Excluye todos los avisos de la persona, no solo los de las fechas afectadas | Abierto |
-| Histórico | La pantalla de registro muestra como máximo 60 jornadas | Abierto |
+| Tramos solapados | Una corrección no impide cruzar dos tramos. Una reunión puede repetir tiempo ya anotado | Cerrado. `test_una_correccion_no_puede_pisar_otro_rato` y `test_la_reunion_no_repite_un_rato_ya_anotado` |
+| Cifra distinta en el panel y en el registro | Con la jornada abierta pasada la hora de salida, Hoy puede cortar el tiempo y el registro o el CSV seguir sumando | Cerrado. `test_el_registro_cuenta_igual_que_hoy_cuando_la_jornada_sigue_abierta` |
+| Dos correcciones seguidas | No se relee el tramo al guardar. El inicio puede quedar después del fin | Cerrado. `test_dos_correcciones_seguidas_no_dejan_una_hora_imposible` |
+| Borrado de demostración | Ana y Marta pueden borrar el fichaje de hoy sin mirar el entorno | Cerrado fuera de la demo. `test_fuera_de_la_demo_no_se_borran_fichajes_ni_se_ven_las_cuentas` |
+| Cambio de horario | Excluye todos los avisos de la persona, no solo los de las fechas afectadas | Cerrado. `test_el_fallo_comun_y_el_horario_no_cuentan` |
+| Quién declara la salida | La hora de salida se guardaba sin autor ni momento propios | Cerrado. `test_la_salida_guarda_quien_la_declaro_y_una_correccion_no_lo_borra` |
+| Histórico | La pantalla de registro muestra como máximo 60 jornadas | Cerrado. `test_el_registro_no_se_queda_en_sesenta_jornadas` |
 
 ## Aún sin probar en un entorno real
 
@@ -46,4 +47,4 @@ Desconexión de verdad, cambio de cuenta en el mismo navegador, sesión caducada
 
 ## Última ejecución
 
-El 9 de octubre de 2026, `php artisan test` pasó 42 pruebas y 228 aserciones. La revisión de Pablo de esa misma fecha se hizo sobre una versión anterior, con 18 pruebas y 92 aserciones. La cola sin conexión ya tiene prueba. Los demás defectos de la tabla anterior siguen abiertos.
+El 9 de octubre de 2026, `php artisan test` pasó 53 pruebas y 283 aserciones. La revisión de Pablo de esa misma fecha se hizo sobre una versión anterior, con 18 pruebas y 92 aserciones.

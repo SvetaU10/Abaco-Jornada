@@ -31,7 +31,7 @@ Cada fila enlaza la regla o la tarea que la aplica. El estado «vigente» es lo 
 - Decisión: la corrección añade la hora nueva y conserva la anterior, quién la cambió y cuándo. Un informe ya emitido no se reescribe solo.
 - Motivo: el registro tiene que poder contrastarse. La retención de contraste es el artículo 34.9 del Estatuto de los Trabajadores, cuatro años. Ábaco lo confirma.
 - Alternativa descartada: sustituir la hora y olvidar la anterior.
-- Estado: vigente en `correcciones`. Falta guardar, con la misma idea, quién declara una salida y cuándo.
+- Estado: vigente en `correcciones`. La salida guarda además quién la declaró y cuándo, en `cerrado_por` y `cerrado_at`. Una corrección posterior no borra esa declaración.
 - Aplica en: prueba `test_cambiar_una_hora_conserva_la_anterior`.
 
 ## 2026-10-07 · La baja no borra la jornada

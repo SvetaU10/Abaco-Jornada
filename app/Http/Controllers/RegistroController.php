@@ -23,7 +23,7 @@ class RegistroController extends Controller
 
     public function index(Request $request): View
     {
-        return $this->mostrar($request->user(), $request->user(), false);
+        return $this->mostrar($request, $request->user(), $request->user(), false);
     }
 
     public function de(Request $request, User $user): View
@@ -32,7 +32,7 @@ class RegistroController extends Controller
             return $motivo;
         }
 
-        return $this->mostrar($request->user(), $user, true);
+        return $this->mostrar($request, $request->user(), $user, true);
     }
 
     public function motivo(Request $request, User $user): RedirectResponse
@@ -60,7 +60,7 @@ class RegistroController extends Controller
 
     public function show(Request $request, Jornada $jornada): View
     {
-        $jornada->load('user', 'tramos.correcciones.autor');
+        $jornada->load('user', 'tramos.correcciones.autor', 'tramos.cerradoPor');
         $this->autorizar($request->user(), $jornada->user);
 
         if ($motivo = $this->pedirMotivo($request, $jornada->user)) {
@@ -70,8 +70,8 @@ class RegistroController extends Controller
         return view('registro.show', [
             'jornada' => $jornada,
             'persona' => $jornada->user,
-            'total' => Tiempo::texto($this->jornada->minutosDeJornada($jornada)),
-            'porEncima' => $this->jornada->porEncima($jornada->user, $jornada),
+            'total' => Tiempo::texto($this->jornada->minutosRegistrados($jornada->user, $jornada)),
+            'porEncima' => $this->jornada->porEncimaRegistrado($jornada->user, $jornada),
             'puedeCorregir' => $request->user()->esResponsable()
                 || ($request->user()->id === $jornada->user_id && $jornada->work_date->gte(now()->subDays(7)->startOfDay())),
             'motivos' => Correccion::MOTIVOS,
@@ -150,21 +150,27 @@ class RegistroController extends Controller
         return $this->descargar($request->user(), $user);
     }
 
-    private function mostrar(User $visor, User $persona, bool $consulta): View
+    private function mostrar(Request $request, User $visor, User $persona, bool $consulta): View
     {
         $this->autorizar($visor, $persona);
 
+        $desde = $request->query('desde');
+        $hasta = $request->query('hasta');
         $jornadas = Jornada::query()
             ->with('tramos')
             ->where('user_id', $persona->id)
+            ->when(is_string($desde) && $desde !== '', fn ($q) => $q->whereDate('work_date', '>=', $desde))
+            ->when(is_string($hasta) && $hasta !== '', fn ($q) => $q->whereDate('work_date', '<=', $hasta))
             ->orderByDesc('work_date')
-            ->limit(60)
-            ->get();
+            ->paginate(60)
+            ->withQueryString();
 
         return view('registro.index', [
             'persona' => $persona,
             'consulta' => $consulta,
             'jornadas' => $jornadas,
+            'desde' => is_string($desde) ? $desde : '',
+            'hasta' => is_string($hasta) ? $hasta : '',
             'servicio' => $this->jornada,
             'explicaciones' => $persona->explicaciones()->latest()->limit(10)->get(),
             'consultas' => $consulta

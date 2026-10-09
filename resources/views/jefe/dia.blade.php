@@ -31,6 +31,9 @@
                     · anotado a las {{ \App\Support\Tiempo::hora($tramo->anotado_at) }}
                 @endif
             </p>
+            @if ($tramo->cerrado_at)
+                <p class="secundario">Salida declarada por {{ $tramo->cerradoPor?->name }} el {{ \App\Support\Tiempo::fecha($tramo->cerrado_at) }} a las {{ \App\Support\Tiempo::hora($tramo->cerrado_at) }}.</p>
+            @endif
 
             @foreach ($tramo->correcciones as $correccion)
                 <p class="secundario">

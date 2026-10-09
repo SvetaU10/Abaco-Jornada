@@ -95,7 +95,7 @@ class JefeController extends Controller
 
     public function dia(Request $request, Jornada $jornada): View
     {
-        $jornada->load('user', 'tramos.correcciones.autor');
+        $jornada->load('user', 'tramos.correcciones.autor', 'tramos.cerradoPor');
         $persona = $jornada->user;
 
         if ($motivo = $this->pedirMotivo($request, $persona)) {

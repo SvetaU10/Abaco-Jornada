@@ -16,11 +16,13 @@
         <button class="boton boton-principal" type="submit">Entrar</button>
     </form>
 
-    <details class="pruebas">
-        <summary>Cuentas de prueba</summary>
-        <p>Ana López · ana.lopez@abaco.test</p>
-        <p>Marta Ruiz, responsable · marta.ruiz@abaco.test</p>
-        <p>Carmen Ortega, dirección · carmen.ortega@abaco.test</p>
-        <p>Contraseña: Jornada2026</p>
-    </details>
+    @if (app()->environment('local', 'testing'))
+        <details class="pruebas">
+            <summary>Cuentas de prueba</summary>
+            <p>Ana López · ana.lopez@abaco.test</p>
+            <p>Marta Ruiz, responsable · marta.ruiz@abaco.test</p>
+            <p>Carmen Ortega, dirección · carmen.ortega@abaco.test</p>
+            <p>Contraseña: Jornada2026</p>
+        </details>
+    @endif
 @endsection

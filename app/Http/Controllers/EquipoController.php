@@ -78,12 +78,12 @@ class EquipoController extends Controller
 
         try {
             $this->guardarHorario($user, $datos, $datos['effective_from']);
-            $this->jornada->excluirAvisosDeHorario($user);
+            $this->jornada->excluirAvisosDeHorario($user, $datos['effective_from']);
         } catch (ReglaJornada $e) {
             return back()->with('aviso', $e->getMessage())->withInput();
         }
 
-        return back()->with('ok', 'Guardado. El horario vale desde el '.$datos['effective_from'].'. Los avisos de ese error no cuentan.');
+        return back()->with('ok', 'Guardado. El horario vale desde el '.$datos['effective_from'].'. Los avisos desde ese día no cuentan. Los anteriores se conservan.');
     }
 
     public function ausencia(Request $request, User $user): RedirectResponse
